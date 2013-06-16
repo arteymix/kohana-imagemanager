@@ -11,7 +11,7 @@ defined('SYSPATH') or die('No direct script access.');
  * @copyright (c) 2012, Hète.ca Inc.
  * @todo write tests
  */
-class ImageManager_Test extends Unittest_TestCase {
+class Images_Test extends Unittest_TestCase {
 
     public function test_store() {
         ImageManager::instance()->store(array());

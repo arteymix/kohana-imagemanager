@@ -21,69 +21,57 @@ class Kohana_Model_Image extends ORM {
      * @param string $max_size
      * @return Validation
      */
-    public static function get_image_file_validation(array $file, $max_width = NULL, $max_height = NULL, $exact = FALSE, $max_size = NULL) {
+    public static function get_image_validation(array $file, $max_width = NULL, $max_height = NULL, $exact = FALSE, $max_size = NULL) {
 
         if ($max_size === NULL) {
-            $max_size = ImageManager::instance()->config("max_size");
+            $max_size = Kohana::$config->load('images.max_size');
         }
 
         return Validation::factory($file)
-                        ->rule("name", "not_empty")
-                        ->rule("tmp_name", "not_empty")
-                        ->rule("error", "not_empty")
-                        ->rule("size", "not_empty")
-                        ->rule("name", "Upload::not_empty", array(":file"))
-                        ->rule("name", "Upload::image", array(":file", $max_width, $max_height, $exact))
-                        ->rule("name", "Upload::size", array(":file", $max_size))
-                        ->bind(":file", $file);
+                        ->rule('name', 'not_empty')
+                        ->rule('tmp_name', 'not_empty')
+                        ->rule('error', 'not_empty')
+                        ->rule('size', 'not_empty')
+                        ->rule('name', 'Upload::not_empty', array(':file'))
+                        ->rule('name', 'Upload::image', array(':file', $max_width, $max_height, $exact))
+                        ->rule('name', 'Upload::size', array(':file', $max_size))
+                        ->bind(':file', $file);
     }
 
-    /**
-     * Delete the image and its model.
-     */
     public function delete() {
         // Unlink only if the file exists
-        if ($this->exists()) {
+        if ($this->image_exists()) {
             unlink($this->path());
         }
         return parent::delete();
     }
 
     /**
-     * Tells if the image exists in the filepath.
-     * @return type
+     * Get the image relative path.
+     * 
+     * @return string
      */
-    public function exists() {
-        return ImageManager::instance()->image_exists($this->hash);
+    public function image_path() {
+        return Images::hash_to_path($this->hash);
     }
 
     /**
-     * Get the image path
-     * @param type $fallback
-     * @return type
+     * Tells if the image exists.
+     * 
+     * This function will also check sha1 hash to ensure image is still valid.
+     * 
+     * @return boolean
      */
-    public function path($fallback = NULL) {
-        if ($fallback === NULL) {
-            $fallback = ImageManager::instance()->config("fallback_image");
-        }
-        return $this->file_exists() ? ImageManager::instance()->hash_to_filepath($this->hash) : $fallback;
-    }
-
-    public function file_exists() {
-        return $this->exists();
-    }
-
-    /**
-     * Returns the path to this image.   
-     */
-    public function filepath($fallback = NULL) {
-        return $this->path($fallback);
+    public function image_exists() {
+        return is_file($this->image_path()) && sha1_file($this->image_path()) === $this->hash;
     }
 
     public function rules() {
         return array(
-            "hash" => array(
-                array("not_empty"),
+            'hash' => array(
+                array('not_empty'),
+                array('alpha_numeric'),
+                array('exact_length', array(':value', 40))
             ),
         );
     }

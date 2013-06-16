@@ -2,7 +2,7 @@
 
 defined('SYSPATH') or die('No direct script access.');
 
-class ImageManager extends Kohana_ImageManager {
+class Images extends Kohana_Images {
     
 }
 
