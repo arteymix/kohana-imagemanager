@@ -66,6 +66,26 @@ class Kohana_Model_Image extends ORM {
         return is_file($this->image_path()) && sha1_file($this->image_path()) === $this->hash;
     }
 
+    /**
+     * Get the width of the image in pixel.
+     * 
+     * @return integer
+     */
+    public function width() {
+        list($width, $height) = getimagesize($this->image_path());
+        return $width;
+    }
+
+    /**
+     * Get the height of the image in pixel
+     * 
+     * @return integer
+     */
+    public function height() {
+        list($width, $height) = getimagesize($this->image_path());
+        return $height;
+    }
+
     public function rules() {
         return array(
             'hash' => array(
