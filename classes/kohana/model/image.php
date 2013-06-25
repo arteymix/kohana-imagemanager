@@ -5,27 +5,24 @@ defined('SYSPATH') or die('No direct script access.');
 /**
  * Model for image.
  * 
- * @package ImageManager
- * @category Models
- * @author Hète.ca Team
+ * @package   Images
+ * @category  Models
+ * @author    Hète.ca Team
  * @copyright (c) 2013, Hète.ca Inc.
  */
 class Kohana_Model_Image extends ORM {
 
     /**
+     * Create a validation object for image file.
      * 
      * @param array $file
      * @param integer $max_width
      * @param integer $max_height
      * @param boolean $exact
-     * @param string $max_size
+     * @param integer $max_size
      * @return Validation
      */
     public static function get_image_validation(array $file, $max_width = NULL, $max_height = NULL, $exact = FALSE, $max_size = NULL) {
-
-        if ($max_size === NULL) {
-            $max_size = Kohana::$config->load('images.max_size');
-        }
 
         return Validation::factory($file)
                         ->rule('name', 'not_empty')
@@ -39,10 +36,10 @@ class Kohana_Model_Image extends ORM {
     }
 
     public function delete() {
+
         // Unlink only if the file exists
-        if ($this->image_exists()) {
-            unlink($this->path());
-        }
+        $this->image_exists() AND unlink($this->image_path());
+
         return parent::delete();
     }
 
@@ -69,21 +66,49 @@ class Kohana_Model_Image extends ORM {
     /**
      * Get the width of the image in pixel.
      * 
-     * @return integer
+     * @return integer NULL if image file does not exist
      */
     public function width() {
-        list($width, $height) = getimagesize($this->image_path());
-        return $width;
+
+        if ($this->image_exists()) {
+            list($width, $height) = getimagesize($this->image_path());
+            return $width;
+        }
+
+        return NULL;
     }
 
     /**
      * Get the height of the image in pixel
      * 
-     * @return integer
+     * @return integer NULL if image file does not exist
      */
     public function height() {
-        list($width, $height) = getimagesize($this->image_path());
-        return $height;
+
+        if ($this->image_exists()) {
+            list($width, $height) = getimagesize($this->image_path());
+            return $height;
+        }
+
+        return NULL;
+    }
+
+    public function size() {
+
+        if ($this->image_exists()) {
+            return filesize($this->image_path());
+        }
+
+        return NULL;
+    }
+
+    public function mime_type() {
+
+        if ($this->image_exists()) {
+            return mime_content_type($this->image_path());
+        }
+
+        return NULL;
     }
 
     public function rules() {
